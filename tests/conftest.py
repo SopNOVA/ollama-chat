@@ -10,6 +10,15 @@ import pytest
 from fastapi.testclient import TestClient
 
 from ollama_chat.app import create_app
+from ollama_chat.config import get_settings
+
+
+@pytest.fixture(autouse=True)
+def reset_settings():
+    """Cada test parte de OLLAMA_URL por defecto (el PUT /settings muta el singleton)."""
+    get_settings.cache_clear()
+    yield
+    get_settings.cache_clear()
 
 
 @pytest.fixture

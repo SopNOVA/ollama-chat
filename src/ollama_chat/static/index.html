@@ -20,7 +20,7 @@
         <div class="mark">C</div>
         <div>
           <h1>Cypher Chat</h1>
-          <div class="sub">Ollama local · red privada</div>
+          <div class="sub">Ollama local, LAN o ngrok</div>
         </div>
       </div>
       <div>
@@ -30,6 +30,16 @@
         <button class="ghost" id="clear" type="button">Limpiar</button>
       </div>
     </header>
+    <!-- URL del servidor Ollama: localhost, IP de LAN, o el https de ngrok. -->
+    <div class="server">
+      <input
+        id="server"
+        type="url"
+        spellcheck="false"
+        placeholder="http://127.0.0.1:11434 o https://xxxx.ngrok-free.app"
+      />
+      <button class="ghost" id="connect" type="button">Conectar</button>
+    </div>
     <!-- Contenedor de mensajes (user / bot / err). -->
     <div id="log"></div>
     <form class="composer" id="form">

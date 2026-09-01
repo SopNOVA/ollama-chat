@@ -4,11 +4,16 @@ El navegador no habla con Ollama directo: pasa por estos handlers, que
 delegan en `OllamaClient` guardado en `app.state` durante el lifespan.
 """
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
-from ollama_chat.config import get_settings
-from ollama_chat.schemas import ChatRequest, HealthResponse, ModelsResponse
+from ollama_chat.config import get_settings, normalize_ollama_url
+from ollama_chat.schemas import (
+    ChatRequest,
+    HealthResponse,
+    ModelsResponse,
+    SettingsUpdate,
+)
 from ollama_chat.services.ollama import OllamaClient
 
 router = APIRouter(prefix="/api")
@@ -27,6 +32,25 @@ async def health() -> HealthResponse:
     está caído; si `/models` falla y esto no, el problema es Ollama.
     """
     settings = get_settings()
+    return HealthResponse(
+        status="ok",
+        ollama=settings.ollama_base,
+        default_model=settings.ollama_model,
+    )
+
+
+@router.put("/settings", response_model=HealthResponse)
+async def update_settings(body: SettingsUpdate) -> HealthResponse:
+    """Cambia la URL de Ollama en caliente (localhost, LAN o ngrok).
+
+    La otra PC pega el link y no hace falta reiniciar ni editar `.env`.
+    No instala modelos: solo apunta a *tu* servidor donde ya corre Ollama.
+    """
+    settings = get_settings()
+    try:
+        settings.ollama_url = normalize_ollama_url(body.ollama_url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return HealthResponse(
         status="ok",
         ollama=settings.ollama_base,

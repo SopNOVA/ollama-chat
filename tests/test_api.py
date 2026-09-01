@@ -84,6 +84,23 @@ def test_models_ollama_down(app, client):
     assert response.status_code == 502
 
 
+def test_update_ollama_url(client):
+    """PUT /api/settings acepta un link ngrok y lo deja limpio (sin /api)."""
+    response = client.put(
+        "/api/settings",
+        json={"ollama_url": "https://demo.ngrok-free.app/api"},
+    )
+    assert response.status_code == 200
+    assert response.json()["ollama"] == "https://demo.ngrok-free.app"
+    health = client.get("/api/health")
+    assert health.json()["ollama"] == "https://demo.ngrok-free.app"
+
+
+def test_update_ollama_url_rejects_garbage(client):
+    response = client.put("/api/settings", json={"ollama_url": "javascript:alert(1)"})
+    assert response.status_code == 400
+
+
 def test_chat_streams_ndjson(app, client):
     """POST /api/chat reenvía líneas NDJSON y el content-type es ndjson."""
     app.state.ollama = FakeOllama()

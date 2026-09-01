@@ -50,3 +50,9 @@ class HealthResponse(BaseModel):
     status: str
     ollama: str
     default_model: str
+
+
+class SettingsUpdate(BaseModel):
+    """Body de PUT /api/settings: pegar aquí el link local o de ngrok."""
+
+    ollama_url: str

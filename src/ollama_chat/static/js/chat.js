@@ -13,6 +13,8 @@ const form = document.getElementById("form");
 const input = document.getElementById("input");
 const model = document.getElementById("model");
 const go = document.getElementById("go");
+const server = document.getElementById("server");
+const connectBtn = document.getElementById("connect");
 // Historial {role, content} que se reenvía en cada request (memoria de la sesión).
 const history = [];
 
@@ -33,6 +35,34 @@ function add(role, text) {
   log.appendChild(el);
   log.scrollTop = log.scrollHeight;
   return el.querySelector(".body");
+}
+
+/** Rellena el campo servidor con la URL actual (env, CLI o la última pegada). */
+async function loadHealth() {
+  const r = await fetch("/api/health");
+  const data = await r.json();
+  if (data.ollama) server.value = data.ollama;
+}
+
+/**
+ * Guarda el link (local / LAN / ngrok) en el backend y recarga modelos.
+ * En la otra PC solo pegas el https de ngrok y pulsas Conectar.
+ */
+async function connectServer() {
+  const url = server.value.trim();
+  if (!url) throw new Error("Pega la URL de Ollama o el link de ngrok");
+  const r = await fetch("/api/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ollama_url: url }),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const detail = data.detail;
+    throw new Error(typeof detail === "string" ? detail : "No pude guardar la URL");
+  }
+  server.value = data.ollama || url;
+  await loadModels();
 }
 
 /** Pide a FastAPI los tags de Ollama y arma las <option> del selector. */
@@ -107,4 +137,17 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-loadModels().catch((e) => add("err", "No pude leer modelos: " + e));
+connectBtn.onclick = () => {
+  connectServer().catch((e) => add("err", String(e)));
+};
+
+server.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    connectBtn.click();
+  }
+});
+
+loadHealth()
+  .then(() => loadModels())
+  .catch((e) => add("err", "No pude leer modelos: " + e));

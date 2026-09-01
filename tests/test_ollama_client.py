@@ -28,6 +28,7 @@ async def test_list_models():
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert str(request.url) == "http://ollama.test/api/tags"
+        assert request.headers.get("ngrok-skip-browser-warning") == "true"
         return httpx.Response(200, json={"models": [{"name": "qwen3:4b"}, {"name": ""}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:

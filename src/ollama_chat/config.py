@@ -1,17 +1,22 @@
 """Configuración de la aplicación leída del entorno.
 
-Valores por defecto cubren un Ollama local típico. Se pueden sobreescribir
-con variables de entorno o con un archivo `.env` en la raíz del proyecto:
+`OLLAMA_URL` puede ser localhost, una IP de LAN, o un túnel ngrok
+cuando el chat corre en otra PC y Ollama está en tu servidor:
 
     OLLAMA_URL=http://127.0.0.1:11434
+    OLLAMA_URL=https://xxxx.ngrok-free.app
     OLLAMA_MODEL=qwen3:4b
     HOST=0.0.0.0
     PORT=7860
 """
 
 from functools import lru_cache
+from urllib.parse import urlparse
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Sufijos que la gente pega al copiar el link (ngrok / docs de Ollama).
+_STRIP_SUFFIXES = ("/api/tags", "/api/chat", "/api")
 
 
 class Settings(BaseSettings):
@@ -39,6 +44,25 @@ class Settings(BaseSettings):
     def ollama_base(self) -> str:
         """URL de Ollama sin barra final, lista para concatenar `/api/...`."""
         return self.ollama_url.rstrip("/")
+
+
+def normalize_ollama_url(url: str) -> str:
+    """Limpia un link pegado (local o ngrok) y valida que sea http(s).
+
+    Acepta `https://abc.ngrok-free.app` o con `/api` al final.
+    Rechaza esquemas raros (`file:`, `javascript:`) para no abrir SSRF obvio.
+    """
+    cleaned = (url or "").strip().rstrip("/")
+    for suffix in _STRIP_SUFFIXES:
+        if cleaned.endswith(suffix):
+            cleaned = cleaned[: -len(suffix)].rstrip("/")
+            break
+    parsed = urlparse(cleaned)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError(
+            "URL inválida. Usa http://127.0.0.1:11434 o el link https de ngrok."
+        )
+    return cleaned
 
 
 @lru_cache

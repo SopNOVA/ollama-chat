@@ -18,6 +18,10 @@ from fastapi import HTTPException
 from ollama_chat.config import Settings
 from ollama_chat.schemas import ChatMessage
 
+# ngrok gratis intercepta requests "de navegador". Este header lo salta.
+# En Ollama local no molesta: se ignora.
+_UPSTREAM_HEADERS = {"ngrok-skip-browser-warning": "true"}
+
 
 class OllamaClient:
     """Wrapper fino sobre httpx.AsyncClient + Settings.
@@ -42,7 +46,11 @@ class OllamaClient:
         Ollama no contestó o contestó mal.
         """
         try:
-            response = await self._http.get(f"{self.base_url}/api/tags", timeout=10.0)
+            response = await self._http.get(
+                f"{self.base_url}/api/tags",
+                timeout=10.0,
+                headers=_UPSTREAM_HEADERS,
+            )
             response.raise_for_status()
         except httpx.HTTPError as exc:
             raise HTTPException(
@@ -79,6 +87,7 @@ class OllamaClient:
                 f"{self.base_url}/api/chat",
                 json=payload,
                 timeout=None,  # la generación puede durar mucho
+                headers=_UPSTREAM_HEADERS,
             ) as response:
                 if response.status_code >= 400:
                     err = await response.aread()

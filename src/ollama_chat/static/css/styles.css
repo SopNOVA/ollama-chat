@@ -47,7 +47,8 @@ header {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .brand {
@@ -83,11 +84,22 @@ select, button, textarea {
   color: var(--text);
 }
 
-select {
+select, .server input {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 8px 10px;
+}
+
+.server {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.server input {
+  flex: 1;
+  min-width: 0;
 }
 
 .ghost {
