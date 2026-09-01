@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cypher Chat</title>
+  <!-- Estilos servidos por FastAPI en /static (ver app.py). -->
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+  <!--
+    Esqueleto de la UI. El JS (chat.js) rellena:
+      #model  → opciones de modelos Ollama
+      #log    → burbujas de conversación
+    y envía #form a POST /api/chat.
+  -->
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="mark">C</div>
+        <div>
+          <h1>Cypher Chat</h1>
+          <div class="sub">Ollama local · red privada</div>
+        </div>
+      </div>
+      <div>
+        <!-- Se llena en loadModels() al abrir la página. -->
+        <select id="model"></select>
+        <!-- Borra historial en memoria y las burbujas del DOM. -->
+        <button class="ghost" id="clear" type="button">Limpiar</button>
+      </div>
+    </header>
+    <!-- Contenedor de mensajes (user / bot / err). -->
+    <div id="log"></div>
+    <form class="composer" id="form">
+      <textarea id="input" placeholder="Escribe un prompt…" autofocus></textarea>
+      <button class="send" id="go" type="submit">Enviar</button>
+    </form>
+    <div class="hint">Enter envía · Shift+Enter nueva línea</div>
+  </div>
+  <script src="/static/js/chat.js"></script>
+</body>
+</html>

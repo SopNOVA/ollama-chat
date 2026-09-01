@@ -1,0 +1,14 @@
+# Levanta solo Cypher Chat. Ollama se espera en el host (puerto 11434).
+# host.docker.internal: en Linux se resuelve con extra_hosts + host-gateway.
+services:
+  chat:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:4b}
+      HOST: 0.0.0.0
+      PORT: 7860
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
