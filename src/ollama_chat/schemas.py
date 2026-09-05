@@ -32,6 +32,10 @@ class ChatRequest(BaseModel):
     model: str = Field(default_factory=lambda: get_settings().ollama_model)
     messages: list[ChatMessage] = Field(default_factory=list)
     stream: bool = True
+    # True = tratar el último mensaje como búsqueda y traer enlaces.
+    web_search: bool = False
+    # True = consultar SQL Server en solo lectura (SELECT / EXEC).
+    use_db: bool = False
 
 
 class ModelsResponse(BaseModel):
@@ -50,6 +54,7 @@ class HealthResponse(BaseModel):
     status: str
     ollama: str
     default_model: str
+    database: str = "off"
 
 
 class SettingsUpdate(BaseModel):

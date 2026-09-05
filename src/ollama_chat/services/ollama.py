@@ -99,6 +99,30 @@ class OllamaClient:
         except httpx.HTTPError as exc:
             yield _ndjson_error(str(exc))
 
+    async def chat_complete(self, model: str, messages: list[ChatMessage]) -> str:
+        """Una respuesta completa (sin stream) para planes JSON de SQL."""
+        payload = {
+            "model": model or self._settings.ollama_model,
+            "messages": [m.model_dump() for m in messages],
+            "stream": False,
+            "think": False,
+        }
+        try:
+            response = await self._http.post(
+                f"{self.base_url}/api/chat",
+                json=payload,
+                timeout=120.0,
+                headers=_UPSTREAM_HEADERS,
+            )
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Ollama no responde en {self.base_url}: {exc}",
+            ) from exc
+        data = response.json()
+        return str((data.get("message") or {}).get("content") or "")
+
 
 def _ndjson_error(message: str) -> str:
     """Una línea JSON con el campo `error`, mismo formato que espera el frontend."""

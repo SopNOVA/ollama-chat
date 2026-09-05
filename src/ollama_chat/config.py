@@ -8,6 +8,10 @@ cuando el chat corre en otra PC y Ollama está en tu servidor:
     OLLAMA_MODEL=qwen3:4b
     HOST=0.0.0.0
     PORT=7860
+    GOOGLE_API_KEY=   # opcional, Custom Search JSON API
+    GOOGLE_CSE_ID=    # id del buscador programable (toda la web)
+    DB_ENGINE=sqlite  # sqlite | postgres | mssql
+    DB_PATH=/home/cypherhn/ontmonitor/hyperion_onms.db
 """
 
 from functools import lru_cache
@@ -39,6 +43,29 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     # Puerto HTTP de Cypher Chat (no confundir con el 11434 de Ollama).
     port: int = 7860
+    # Custom Search JSON API (opcional). Sin esto se usa metasearch con Google.
+    google_api_key: str = ""
+    google_cse_id: str = ""
+    # Cuántos enlaces pedir (Google CSE admite como máximo 10).
+    search_max_results: int = 8
+    # Región ddgs, p.ej. es-es o us-en.
+    search_region: str = "es-es"
+    # sqlite (Hyperion local), postgres o mssql.
+    db_engine: str = "sqlite"
+    db_path: str = ""
+    db_host: str = ""
+    db_port: int = 5432
+    db_name: str = ""
+    db_user: str = ""
+    db_password: str = ""
+    db_max_rows: int = 50
+    db_timeout: int = 30
+
+    @property
+    def db_configured(self) -> bool:
+        if self.db_engine.lower() == "sqlite":
+            return bool(self.db_path.strip())
+        return bool(self.db_host and self.db_name and self.db_user and self.db_password)
 
     @property
     def ollama_base(self) -> str:

@@ -23,9 +23,18 @@
           <div class="sub">Ollama local, LAN o ngrok</div>
         </div>
       </div>
-      <div>
+      <div class="actions">
         <!-- Se llena en loadModels() al abrir la página. -->
         <select id="model"></select>
+        <!-- Si está marcado, el mensaje se busca en Google y se pintan enlaces. -->
+        <label class="web-toggle" title="Solo La Prensa, El Heraldo, La Tribuna, El País HN, Hondudiario, Proceso, El Libertador, HCH, Canal 11, Facebook, Instagram y LinkedIn">
+          <input type="checkbox" id="websearch" />
+          <span>Prensa HN</span>
+        </label>
+        <label class="web-toggle" title="Consultar Hyperion (SQLite) en solo lectura y generar gráficos de reporte. No hace UPDATE ni DELETE.">
+          <input type="checkbox" id="usedb" />
+          <span>SQL</span>
+        </label>
         <!-- Borra historial en memoria y las burbujas del DOM. -->
         <button class="ghost" id="clear" type="button">Limpiar</button>
       </div>
@@ -43,11 +52,12 @@
     <!-- Contenedor de mensajes (user / bot / err). -->
     <div id="log"></div>
     <form class="composer" id="form">
-      <textarea id="input" placeholder="Escribe un prompt…" autofocus></textarea>
+      <textarea id="input" placeholder="Escribe un prompt o «busca …» (prensa HN)" autofocus></textarea>
       <button class="send" id="go" type="submit">Enviar</button>
     </form>
-    <div class="hint">Enter envía · Shift+Enter nueva línea</div>
+    <div class="hint">Enter envía · «busca …» · «consulta la base …» · «grafica ONTs por clasificación»</div>
   </div>
+  <script src="/static/js/chart.umd.min.js"></script>
   <script src="/static/js/chat.js"></script>
 </body>
 </html>

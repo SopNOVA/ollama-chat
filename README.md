@@ -83,6 +83,45 @@ ngrok http 7860
 
 En la otra PC solo abres `https://yyyy.ngrok-free.app` en el navegador. El campo Servidor puede quedarse en `http://127.0.0.1:11434` porque Ollama está en la misma máquina que el chat.
 
+## Búsqueda en prensa hondureña (enlaces)
+
+Qwen no navega Internet solo. Cypher Chat busca y **solo muestra** notas de estos sitios (cualquier otro link se descarta):
+
+- [laprensa.hn](https://www.laprensa.hn/), [elheraldo.hn](https://www.elheraldo.hn/), [latribuna.hn](https://www.latribuna.hn/), [elpais.hn](https://www.elpais.hn/)
+- [hondudiario.com](https://hondudiario.com/), [proceso.hn](https://proceso.hn/), [ellibertador.hn](https://ellibertador.hn/), [hch.tv](https://hch.tv/), [canal11.hn](https://canal11.hn/)
+- Facebook, Instagram y LinkedIn
+
+- Escribe `busca congreso nacional` (o `/search …`).
+- O activa el interruptor **Prensa HN** y manda la consulta tal cual.
+
+Sin claves usa un metasearch. Para la API oficial de Google (más estable, 100 consultas/día gratis):
+
+1. Crea un [buscador programable](https://programmablesearchengine.google.com/) con **Search the entire web**.
+2. Activa [Custom Search JSON API](https://console.cloud.google.com/apis/library/customsearch.googleapis.com) y crea una API key.
+3. En `.env`:
+
+```bash
+GOOGLE_API_KEY=tu_key
+GOOGLE_CSE_ID=tu_cx
+SEARCH_MAX_RESULTS=8
+```
+
+## Base de datos (solo lectura)
+
+La IA consulta **SQLite** de Hyperion ONMS (`customers`, `olts`, `onts`, `ping_logs`, `telemetry_events`, `users`) en solo lectura. No hace `UPDATE`, `DELETE`, `INSERT` ni `DROP`. El archivo se abre `mode=ro`.
+
+Hyperion local (sin Docker):
+
+```bash
+DB_ENGINE=sqlite
+DB_PATH=/home/cypherhn/ontmonitor/hyperion_onms.db
+```
+
+Postgres (Docker) o SQL Server: `DB_ENGINE=postgres` / `mssql` y `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`.
+
+En el chat: activa **SQL** o escribe `consulta la base …` / `/sql …`.
+Para reportes: `grafica ONTs por clasificación` o `reporte de clientes por plan`. El gráfico se puede bajar como **PNG**.
+
 ## Variables de entorno
 
 | Variable | Default | Significado |
@@ -92,6 +131,17 @@ En la otra PC solo abres `https://yyyy.ngrok-free.app` en el navegador. El campo
 | `HOST` | `0.0.0.0` | Dirección de escucha del chat |
 | `PORT` | `7860` | Puerto HTTP del chat |
 | `RELOAD` | (vacío) | `true` recarga el código al guardar |
+| `GOOGLE_API_KEY` | (vacío) | Clave de Custom Search JSON API |
+| `GOOGLE_CSE_ID` | (vacío) | ID del buscador programable (`cx`) |
+| `SEARCH_MAX_RESULTS` | `8` | Enlaces por búsqueda (máx. 10) |
+| `SEARCH_REGION` | `es-es` | Región del metasearch |
+| `DB_ENGINE` | `sqlite` | `sqlite` (Hyperion local), `postgres` o `mssql` |
+| `DB_PATH` | (vacío) | Ruta al `.db` si `sqlite` |
+| `DB_HOST` | (vacío) | `127.0.0.1` o `IP\INSTANCIA` (postgres/mssql) |
+| `DB_PORT` | `5432` | `5432` Postgres / `1433` SQL Server |
+| `DB_NAME` | (vacío) | p.ej. `hyperion_onms` |
+| `DB_USER` / `DB_PASSWORD` | (vacío) | Login de solo lectura |
+| `DB_MAX_ROWS` | `50` | Tope de filas por consulta |
 
 ## Tests
 
@@ -118,6 +168,7 @@ src/ollama_chat/          paquete de la aplicación
   schemas.py              modelos request/response
   routers/api.py          endpoints HTTP
   services/ollama.py      cliente HTTP de Ollama (incluye ngrok)
+  services/search.py      Google / web → enlaces reales
   static/                 HTML, CSS, JS
 tests/                    suite pytest
 ```
